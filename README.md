@@ -1,1 +1,3 @@
 # SDN-Data-Center-Load-Balancer
+A server-based dynamic load balancer is proposed. The corre-
+sponding load balancer module runs on top of the SDN controller and achieves the load balancing among the servers. There are multiple server load balancing algorithms already proposed and in use for server load balancing, say Round Robin, Least Connection, Least Loaded etc. The least loaded algorithm proposed in this project utilizes multiple parameters like CPU, memory or I/O utilization, response time etc to determine the load of the servers. The server selection is optimized using a swarm based genetic algorithm, The Artificial Bee Colony algorithm. The ABC algorithm is used to optimize the server selection with load parameters collected in real-time.
