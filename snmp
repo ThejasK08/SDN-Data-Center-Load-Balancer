@@ -1,0 +1,157 @@
+
+/usr/sbin/snmpd -Lsd -Lf /dev/null -I -smux -p /var/run/snmpd.pid -c /etc/snmp/snmpd.confclear
+/etc/init.d/snmpd restart
+sudo ovs-ofctl -O OpenFlow13 dump-flows s1
+
+sudo mn --custom=topology.py --topo=mytopo --controller=remote --nat
+
+
+sudo ovs-dpctl -s show
+
+snmpwalk -v 1 -c public -O e 10.0.0.2 .1.3.6.1.4.1.2021.10.1.3.1
+snmpget -v1 -c public 10.0.0.1 .1.3.6.1.4.1.2021.11.9.0
+
+
+snmpget -v2c -c public 127.0.0.1 .1.3.6.1.4.1.2021.11.11.0|cut -f4 -d' '| awk '{printf "%d", 100 - $1}'
+
+snmpwalk -v2c -c public 127.0.0.1 .1.3.6.1.4.1.2021.11.11|cut -f4 -d' '| awk '{printf "%d", 100 - $1}'
+
+The relevant OIDs are:
+
+    CPU: .1.3.6.1.4.1.2021.11 (UCD-SNMP-MIB::systemStats)
+    Memory: .1.3.6.1.4.1.2021.4 (UCD-SNMP-MIB::memory)
+
+
+System load/CPU Load – is a measurement of CPU over or under-utilization in a Linux system; the number of processes which are being executed by the CPU or in waiting state.
+
+Load average – is the average system load calculated over a given period of time of 1, 5 and 15 minutes.
+
+
+### MACHINE UTILIZATION(SERVER_USAGE.CSV)
+
+1. TIMESTAMP
+2. MACHINEID
+3. UTIL:CPU
+4. UTIL:MEMORY
+5. UTIL:DISK
+6. LOAD1: LINUX CPU LOAD AVERAGE OF 1 MINUTE .1.3.6.1.4.1.2021.10.1.3.1
+7. LOAD5: LINUX CPU LOAD AVERAGE OF 5 MINUTE	.1.3.6.1.4.1.2021.10.1.3.2
+8. LOAD15: LINUX CPU LOAD AVERAGE OF 15 MINUTE	.1.3.6.1.4.1.2021.10.1.3.3
+
+
+
+CPU Statistics
+
+Load
+1 minute Load: .1.3.6.1.4.1.2021.10.1.3.1
+5 minute Load: .1.3.6.1.4.1.2021.10.1.3.2
+15 minute Load: .1.3.6.1.4.1.2021.10.1.3.3
+************************************************************************************
+https://thwack.solarwinds.com/t5/NPM-Documents/Infoblox-CPU-IP-CPU/ta-p/534816
+### CPU util
+
+ssCpuRawUser + ssCpuRawNice + ssCpuRawSystem / ssCpuRawUser + ssCpuRawNice + ssCpuRawSystem + ssCpuIdle
+
+ssCpuRawUser : .1.3.6.1.4.1.2021.11.50.0
+	The number of 'ticks' (typically 1/100s) spent processing user-level code. On a multi-processor system, the 'ssCpuRaw*' counters are cumulative over all CPUs, so their sum will typically be N*100 (for N processors)
+
+ssCpuRawNice 	1.3.6.1.4.1.2021.11.51
+The number of 'ticks' (typically 1/100s) spent processing reduced-priority code. This object will not be implemented on hosts where the underlying operating system does not measure this particular CPU metric. On a multi-processor system, the 'ssCpuRaw*' counters are cumulative over all CPUs, so their sum will typically be N*100 (for N processors).
+
+ssCpuRawSystem 	1.3.6.1.4.1.2021.11.52
+	The number of 'ticks' (typically 1/100s) spent processing system-level code. On a multi-processor system, the 'ssCpuRaw*' counters are cumulative over all CPUs, so their sum will typically be N*100 (for N processors). This object may sometimes be implemented as the combination of the 'ssCpuRawWait(54)' and 'ssCpuRawKernel(55)' counters, so care must be taken when summing the overall raw counters.
+
+ssCpuRawIdle 	1.3.6.1.4.1.2021.11.53
+	The number of 'ticks' (typically 1/100s) spent idle. On a multi-processor system, the 'ssCpuRaw*' counters are cumulative over all CPUs, so their sum will typically be N*100 (for N processors).
+****************************************************************************************
+https://support.solarwinds.com/SuccessCenter/s/article/NET-SNMP-memory-calculation+&cd=1&hl=en&ct=clnk&gl=in&client=ubuntu
+###memory util
+
+For Net-SNMP the following OIDs will be used:
+
+Total RAM in machine: .1.3.6.1.4.1.2021.4.5
+Total RAM available: .1.3.6.1.4.1.2021.4.6
+Total RAM Buffered: .1.3.6.1.4.1.2021.4.14
+Total Cached Memory: .1.3.6.1.4.1.2021.4.15
+
+
+Percentage Calculation
+
+Total RAM in machine - Total RAM Available = Total RAM Used
+(12198828 - 459380 = 11739448)
+
+
+
+Total RAM Used - Cached Memory - RAM Buffered = Used Memory
+(11739448 - 6583736 - 60 = 5155652)
+
+
+
+The values we put into the Database will be:
+
+Total RAM in machine & Used Memory but we first multiply the value by 1024
+12198828 *  1024  = 12491599872 (Total RAM)
+5155652 *  1024  = 5279387648   (Used Memory)
+
+
+
+To get the percentage:
+(Used Memory / Total RAM) * 100
+(5279387648 / 12491599872) * 100 = 42.26%
+
+***************************************************************************************
+https://pitstop.manageengine.com/portal/kb/articles/server-disk-utilization-formula-snmp
+###disk util
+
+1).1.3.6.1.2.1.25.2.3.1.2 :hrStorageType
+
+2).1.3.6.1.2.1.25.2.3.1.4 : hrStorageAllocationUnits
+
+3).1.3.6.1.2.1.25.2.3.1.5: hrStorageSize
+
+4).1.3.6.1.2.1.25.2.3.1.6: hrStorageUsed
+
+
+(hrStorageAllocationUnits*hrStorageUsed)*100/(hrStorageAllocationUnits*hrStorageSize)
+
+
+Total used= 4096*20363308+ 4096*748795+ 4096*28642= 86592491520 bytes = 86.59GB
+
+Total HD size=4096*64607743+ 4096*34365439+ 4096*25599999=510251749376 bytes= 510.2GB
+
+
+
+
+So Disk Utilization(%)=86.59*100/510.2=16.97%
+***************************************************************************************
+
+
+CPU
+percentage of user CPU time: .1.3.6.1.4.1.2021.11.9.0
+raw user cpu time ssCpuRawUser : .1.3.6.1.4.1.2021.11.50.0
+percentages of system CPU time: .1.3.6.1.4.1.2021.11.10.0
+raw system cpu time: .1.3.6.1.4.1.2021.11.52.0
+percentages of idle CPU time: .1.3.6.1.4.1.2021.11.11.0
+raw idle cpu time: .1.3.6.1.4.1.2021.11.53.0
+raw nice cpu time: .1.3.6.1.4.1.2021.11.51.0
+
+Memory Statistics
+
+Total Swap Size: .1.3.6.1.4.1.2021.4.3.0
+Available Swap Space: .1.3.6.1.4.1.2021.4.4.0
+Total RAM in machine: .1.3.6.1.4.1.2021.4.5.0
+Total RAM used: .1.3.6.1.4.1.2021.4.6.0
+Total RAM Free: .1.3.6.1.4.1.2021.4.11.0
+Total RAM Shared: .1.3.6.1.4.1.2021.4.13.0
+Total RAM Buffered: .1.3.6.1.4.1.2021.4.14.0
+Total Cached Memory: .1.3.6.1.4.1.2021.4.15.0
+
+
+
+ Network Interface Statistics
+
+List NIC names: .1.3.6.1.2.1.2.2.1.2
+Get Bytes IN: .1.3.6.1.2.1.2.2.1.10
+Get Bytes IN for NIC 4: .1.3.6.1.2.1.2.2.1.10.4
+Get Bytes OUT: .1.3.6.1.2.1.2.2.1.16
+Get Bytes OUT for NIC 4: .1.3.6.1.2.1.2.2.1.16.4
